@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.GamerApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Optional: set background for the activity -->
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+</resources>
