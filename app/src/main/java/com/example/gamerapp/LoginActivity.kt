@@ -3,10 +3,12 @@ package com.example.gamerapp
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import android.text.Editable
@@ -19,14 +21,15 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var loginBtn: Button
     private lateinit var fbBtn: Button
     private lateinit var googleBtn: Button
-    private lateinit var forgotBtn: Button
-    private lateinit var registerBtn: Button
+    private lateinit var forgotBtn: View // TextView for Forgot Password
+    private lateinit var registerBtn: View // TextView for Register
 
-    @SuppressLint()
+    @SuppressLint("Unspecified")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // Bind views
         emailEt = findViewById(R.id.etEmail)
         passwordEt = findViewById(R.id.etPassword)
         loginBtn = findViewById(R.id.btnLogin)
@@ -35,7 +38,8 @@ class LoginActivity : AppCompatActivity() {
         forgotBtn = findViewById(R.id.tvForgotPassword)
         registerBtn = findViewById(R.id.tvRegister)
 
-        val watcher = object: TextWatcher {
+        // TextWatcher for real-time validation
+        val watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { validateFieldsRealtime() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -43,24 +47,26 @@ class LoginActivity : AppCompatActivity() {
         emailEt.addTextChangedListener(watcher)
         passwordEt.addTextChangedListener(watcher)
 
-        fbBtn.setOnClickListener {
-            showSnackbar(it, "Coming soon")
-        }
-        googleBtn.setOnClickListener {
-            showSnackbar(it, "Coming soon")
-        }
-
+        // Click listeners
+        fbBtn.setOnClickListener { showSnackbar(it, "Coming soon") }
+        googleBtn.setOnClickListener { showSnackbar(it, "Coming soon") }
         forgotBtn.setOnClickListener {
+            Log.d("LoginActivity", "Forgot Password clicked")
             startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
-
         registerBtn.setOnClickListener {
-            startActivity(Intent(this, SignUpActivity::class.java))
+            try {
+                Log.d("LoginActivity", "Register TextView clicked, starting SignUpActivity")
+                startActivity(Intent(this, SignUpActivity::class.java))
+            } catch (e: Exception) {
+                Log.e("LoginActivity", "Error starting SignUpActivity", e)
+                showSnackbar(it, "Failed to open Sign Up")
+            }
         }
 
         loginBtn.setOnClickListener { v ->
             if (isValidEmail(emailEt.text.toString()) && isValidPassword(passwordEt.text.toString())) {
-                // ici on simule login ok -> Home
+                Log.d("LoginActivity", "Login successful, starting HomeActivity")
                 startActivity(Intent(this, HomeActivity::class.java))
             } else {
                 showSnackbar(v, "Email ou mot de passe invalide")

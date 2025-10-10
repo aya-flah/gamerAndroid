@@ -1,19 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
+
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:padding="24dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
-    <TextView android:text="Enter OTP" android:textSize="20sp"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/red"
+        app:navigationIcon="@drawable/ic_arrow_back_"
+        app:title=""
+        app:titleCentered="true" />
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter the code sent to you by"
+        android:textSize="16sp"
+        android:textColor="#666666" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email or Mobile number"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#666666" />
 
     <LinearLayout
-        android:layout_marginTop="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_marginTop="16dp">
 
         <EditText
             android:id="@+id/otp1"
@@ -22,7 +55,10 @@
             android:layout_margin="6dp"
             android:textAlignment="center"
             android:inputType="number"
-            android:maxLength="1"/>
+            android:maxLength="1"
+            android:background="@android:drawable/editbox_background"
+            android:textColor="#000000"
+            android:textSize="18sp" />
 
         <EditText
             android:id="@+id/otp2"
@@ -31,7 +67,10 @@
             android:layout_margin="6dp"
             android:textAlignment="center"
             android:inputType="number"
-            android:maxLength="1"/>
+            android:maxLength="1"
+            android:background="@android:drawable/editbox_background"
+            android:textColor="#000000"
+            android:textSize="18sp" />
 
         <EditText
             android:id="@+id/otp3"
@@ -40,7 +79,10 @@
             android:layout_margin="6dp"
             android:textAlignment="center"
             android:inputType="number"
-            android:maxLength="1"/>
+            android:maxLength="1"
+            android:background="@android:drawable/editbox_background"
+            android:textColor="#000000"
+            android:textSize="18sp" />
 
         <EditText
             android:id="@+id/otp4"
@@ -49,21 +91,41 @@
             android:layout_margin="6dp"
             android:textAlignment="center"
             android:inputType="number"
-            android:maxLength="1"/>
+            android:maxLength="1"
+            android:background="@android:drawable/editbox_background"
+            android:textColor="#000000"
+            android:textSize="18sp" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnResend"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Resend Code"
-        android:layout_marginTop="12dp"/>
 
     <Button
         android:id="@+id/btnVerify"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Verify"
-        android:layout_marginTop="12dp"/>
+        android:backgroundTint="#FF0000"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp" />
 
+    <TextView
+        android:layout_width="375dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:text="Didn't receive a verification code?"
+        android:textColor="#666666"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/btnResend"
+        android:layout_width="377dp"
+        android:layout_height="wrap_content"
+        android:text="Resend code"
+        android:textColor="#FF0000"
+        android:gravity="center"
+        android:textSize="14sp" />
+
+
+
+</LinearLayout>
 </LinearLayout>

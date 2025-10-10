@@ -10,6 +10,7 @@ import com.google.android.material.snackbar.Snackbar
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.inputmethod.EditorInfo
+import androidx.appcompat.widget.Toolbar
 
 class OTPActivity : AppCompatActivity() {
 
@@ -19,6 +20,7 @@ class OTPActivity : AppCompatActivity() {
     private lateinit var et4: EditText
     private lateinit var btnVerify: Button
     private lateinit var btnResend: Button
+    private lateinit var toolbar: Toolbar
     private var expectedCode: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +33,11 @@ class OTPActivity : AppCompatActivity() {
         et4 = findViewById(R.id.otp4)
         btnVerify = findViewById(R.id.btnVerify)
         btnResend = findViewById(R.id.btnResend)
+        toolbar = findViewById(R.id.topAppBar)
+
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener { onBackPressed() }
 
         expectedCode = intent.getStringExtra("code") ?: ""
 
@@ -59,16 +66,16 @@ class OTPActivity : AppCompatActivity() {
     private fun setupOtpEditTexts() {
         val list = listOf(et1, et2, et3, et4)
         for (i in 0 until list.size) {
-            list[i].addTextChangedListener(object: TextWatcher {
+            list[i].addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     if (s?.length == 1) {
-                        if (i < list.size - 1) list[i+1].requestFocus()
+                        if (i < list.size - 1) list[i + 1].requestFocus()
                         else {
                             list[i].clearFocus()
                             list[i].onEditorAction(EditorInfo.IME_ACTION_DONE)
                         }
                     } else if (s?.length == 0) {
-                        if (i > 0) list[i-1].requestFocus()
+                        if (i > 0) list[i - 1].requestFocus()
                     }
                 }
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
