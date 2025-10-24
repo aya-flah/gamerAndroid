@@ -1,41 +1,61 @@
 package com.example.gamerapp.screens
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
-import com.example.gamerapp.ui.theme.GamerAppTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+
+import com.example.gamerapp.R
+
+
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-@Composable
-fun SplashScreen(navController: NavController) {
-    LaunchedEffect(Unit) {
-        delay(2000)
-        navController.navigate("login") {
-            popUpTo("splash") { inclusive = true }
-        }
-    }
+import com.example.gamerapp.ui.theme.GamerAppTheme
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Gamer App",
-            style = MaterialTheme.typography.displayMedium
-        )
+class SplashActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            GamerAppTheme {
+                SplashScreen()
+            }
+        }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun SplashScreenPreview() {
-    GamerAppTheme {
-        SplashScreen(navController = rememberNavController())
+fun SplashScreen() {
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        context.startActivity(Intent(context, LoginActivity::class.java))
+        (context as? ComponentActivity)?.finish()
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "App Logo",
+                modifier = Modifier.size(200.dp)
+            )
+        }
     }
 }

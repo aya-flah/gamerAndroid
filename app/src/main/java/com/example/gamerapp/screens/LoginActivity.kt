@@ -1,236 +1,218 @@
 package com.example.gamerapp.screens
 
-import android.util.Patterns
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.gamerapp.ui.theme.GamerAppTheme
+import com.example.gamerapp.MainActivity
 import kotlinx.coroutines.launch
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.foundation.clickable
 import com.example.gamerapp.R
+import com.example.gamerapp.ui.components.GamerButton
+import com.example.gamerapp.ui.components.GamerTextField
+import com.example.gamerapp.ui.theme.GamerAppTheme
+import com.example.gamerapp.ui.theme.PrimaryPink
+import com.example.gamerapp.utils.Validator
+
+class LoginActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            GamerAppTheme {
+                LoginScreen()
+            }
+        }
+    }
+}
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) } // Add this line
+fun LoginScreen() {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    fun validateFields(): Boolean {
-        emailError = if (email.isBlank()) "Email is required"
-        else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) "Invalid email format"
-        else ""
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var rememberMe by remember { mutableStateOf(false) }
 
-        passwordError = if (password.isBlank()) "Password is required"
-        else if (password.length < 6) "Password must be at least 6 characters"
-        else ""
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
 
-        return emailError.isEmpty() && passwordError.isEmpty()
+    // Real-time validation
+    LaunchedEffect(email) {
+        emailError = email.isNotEmpty() && !Validator.isValidEmail(email)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo_gamer), // image li hchty beha
-            contentDescription = "App Logo",
+    LaunchedEffect(password) {
+        passwordError = password.isNotEmpty() && !Validator.isValidPassword(password)
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .size(120.dp) // Adjust size as needed
-                .padding(bottom = 32.dp)
-        )
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
 
-        // Email Field
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                if (emailError.isNotEmpty()) validateFields()
-            },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = emailError.isNotEmpty(),
-            supportingText = {
-                if (emailError.isNotEmpty()) {
-                    Text(text = emailError)
+            // Logo
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "App Logo",
+                modifier = Modifier.size(180.dp)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Email Field
+            GamerTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = "Email",
+                icon = Icons.Default.Email,
+                keyboardType = KeyboardType.Email,
+                isError = emailError,
+                errorMessage = "Must not be empty!"
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password Field
+            GamerTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = "Password",
+                icon = Icons.Default.Lock,
+                isPassword = true,
+                isError = passwordError,
+                errorMessage = "Must not be empty!"
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Remember Me & Forgot Password
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = rememberMe,
+                        onCheckedChange = { rememberMe = it },
+                        colors = CheckboxDefaults.colors(checkedColor = PrimaryPink)
+                    )
+                    Text("Remember Me")
+                }
+
+                TextButton(onClick = {
+                    context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
+                }) {
+                    Text("Forgot password?", color = PrimaryPink)
                 }
             }
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Password Field
-        OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
-                if (passwordError.isNotEmpty()) validateFields()
-            },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = passwordError.isNotEmpty(),
-            supportingText = {
-                if (passwordError.isNotEmpty()) {
-                    Text(text = passwordError)
-                }
-            },
-            visualTransformation = PasswordVisualTransformation()
-        )
+            // Login Button
+            GamerButton(
+                text = "Login",
+                onClick = {
+                    val isEmailValid = Validator.isValidEmail(email)
+                    val isPasswordValid = Validator.isValidPassword(password)
 
-        Spacer(modifier = Modifier.height(24.dp))
+                    emailError = !isEmailValid
+                    passwordError = !isPasswordValid
 
-        // Login Button
-        Button(
-            onClick = {
-                if (validateFields()) {
-                    navController.navigate("home")
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Please check your inputs")
+                    if (isEmailValid && isPasswordValid) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Login Successful!")
+                        }
+                        // Navigate to MainActivity
+                        val intent = Intent(context, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                        (context as? ComponentActivity)?.finish()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("You Have some errors in your inputs!")
+                        }
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE91E63), // Pink background
-                contentColor = Color.White          // White text
             )
-        ) {
-            Text("Login")
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ){
-            Checkbox(
-                checked = rememberMe,
-                onCheckedChange = { rememberMe = it },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFFE91E63)
-                )
-            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // OR
             Text(
-                text = "Remember me",
-                modifier = Modifier.clickable { rememberMe = !rememberMe }
+                text = "OR",
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
-        // Forgot Password
-        TextButton(
-            onClick = { navController.navigate("forgot_password") },
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = Color(0xFFE91E63) // Pink color
-            )
-        ) {
-            Text("Forgot Password?")
-        }
-    }
-        Spacer(modifier = Modifier.height(24.dp))
 
-        // Social Login Buttons - IN SAME ROW
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Facebook Button
-            OutlinedButton(
-                onClick = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Coming soon")
-                    }
-                },
-                modifier = Modifier.weight(1f), // Equal width
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color(0xFF3F51B5), // Pink background
-                    contentColor = Color.White          // White text and icon
-                )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Social Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-               // Icon(Icons.Default.Facebook, contentDescription = "Facebook")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Facebook")
+                Button(
+                    onClick = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Coming soon :)")
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1877F2))
+                ) {
+                    Text("Facebook")
+                }
+
+                Button(
+                    onClick = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Coming soon :)")
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Text("Google", color = MaterialTheme.colorScheme.onSurface)
+                }
             }
 
-            // Google Button
-            OutlinedButton(
-                onClick = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Coming soon")
-                    }
-                },
-                modifier = Modifier.weight(1f), // Equal width
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color(0xFFE8A6BC), // Pink background
-                    contentColor = Color.White          // White text and icon
-                )
-            ) {
-                Icon(Icons.Default.AccountCircle, contentDescription = "Google")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Google")
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Register Now
+            TextButton(onClick = {
+                context.startActivity(Intent(context, SignUpActivity::class.java))
+            }) {
+                Text("Don't have an account? Register Now", color = PrimaryPink)
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Register Now
-        TextButton(
-            onClick = { navController.navigate("signup") },
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = Color(0xFFE91E63) // Pink color
-            )
-        ) {
-            Text("Don't have an account? Register Now")
-        }
-    }
-
-    SnackbarHost(hostState = snackbarHostState)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    GamerAppTheme {
-        LoginScreen(navController = rememberNavController())
     }
 }

@@ -1,79 +1,90 @@
 package com.example.gamerapp
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.gamerapp.screens.ForgotPasswordScreen
-import com.example.gamerapp.screens.HomeScreen
-import com.example.gamerapp.screens.LoginScreen
-import com.example.gamerapp.screens.OTPValidationScreen
-import com.example.gamerapp.screens.ResetPasswordScreen
-import com.example.gamerapp.screens.SignUpScreen
-import com.example.gamerapp.screens.SplashScreen
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.gamerapp.ui.screens.NewsScreen
+import com.example.gamerapp.ui.screens.ProfileScreen
+import com.example.gamerapp.ui.screens.StoreScreen
 import com.example.gamerapp.ui.theme.GamerAppTheme
 
 class MainActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             GamerAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavigation(modifier = Modifier.padding(innerPadding))
-                }
+                MainScreen()
             }
         }
     }
 }
 
-@Composable
-fun AppNavigation(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
+sealed class BottomNavItem(
+    val route: String,
+    val icon: ImageVector,
+    val label: String
+) {
+    object News : BottomNavItem("news", Icons.Default.Home, "News")
+    object Store : BottomNavItem("store", Icons.Default.ShoppingCart, "Store")
+    object Profile : BottomNavItem("profile", Icons.Default.AccountCircle, "Profile")
+}
 
-    NavHost(
-        navController = navController,
-        startDestination = "splash",
-        modifier = modifier.fillMaxSize()
-    ) {
-        composable("splash") {
-            SplashScreen(navController = navController)
+@Composable
+fun MainScreen() {
+    var selectedTab by remember { mutableStateOf(0) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val navItems = listOf(
+        BottomNavItem.News,
+        BottomNavItem.Store,
+        BottomNavItem.Profile
+    )
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
+            ) {
+                navItems.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.label
+                            )
+                        },
+                        label = { Text(item.label) },
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        )
+                    )
+                }
+            }
         }
-        composable("login") {
-            LoginScreen(navController = navController)
-        }
-        composable("signup") {
-            SignUpScreen(navController = navController)
-        }
-        composable("forgot_password") {
-            ForgotPasswordScreen(navController = navController)
-        }
-        composable(
-            route = "otp_validation/{expectedCode}",
-            arguments = listOf(navArgument("expectedCode") { type = NavType.StringType })
-        ) { backStackEntry ->
-            OTPValidationScreen(
-                navController = navController,
-                expectedCode = backStackEntry.arguments?.getString("expectedCode") ?: ""
-            )
-        }
-        composable("reset_password") {
-            ResetPasswordScreen(navController = navController)
-        }
-        composable("home") {
-            HomeScreen(navController = navController)
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            when (selectedTab) {
+                0 -> NewsScreen(snackbarHostState = snackbarHostState)
+                1 -> StoreScreen(snackbarHostState = snackbarHostState)
+                2 -> ProfileScreen(snackbarHostState = snackbarHostState)
+            }
         }
     }
 }

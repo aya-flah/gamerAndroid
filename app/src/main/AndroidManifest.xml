@@ -1,20 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
     <application
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GamerApp">
+        android:theme="@style/Theme.GamerApp"
+        tools:targetApi="31">
+
+        <!-- Splash Activity (ONLY LAUNCHER) -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.gamerapp.screens.SplashActivity"
             android:exported="true"
-            android:label="@string/app_name">
+            android:theme="@style/Theme.GamerApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Main Activity (NOT LAUNCHER) -->
+        <activity
+            android:name="com.example.gamerapp.MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GamerApp" />
+
+        <!-- Login Activity (NOT LAUNCHER) -->
+        <activity
+            android:name="com.example.gamerapp.screens.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GamerApp" />
+
+        <!-- Sign Up Activity -->
+        <activity
+            android:name=".screens.SignUpActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GamerApp" />
+
+        <!-- Forgot Password Activity -->
+        <activity
+            android:name="com.example.gamerapp.screens.ForgotPasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GamerApp" />
+
+        <!-- OTP Validation Activity -->
+        <activity
+            android:name="com.example.gamerapp.screens.OTPValidationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GamerApp" />
+
+        <!-- Reset Password Activity -->
+        <activity
+            android:name="com.example.gamerapp.screens.ResetPasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GamerApp" />
+
     </application>
+
 </manifest>

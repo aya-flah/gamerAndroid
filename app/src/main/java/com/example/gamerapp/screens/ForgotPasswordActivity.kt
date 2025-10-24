@@ -1,119 +1,154 @@
 package com.example.gamerapp.screens
-import android.util.Patterns
-import com.example.gamerapp.ui.theme.GamerAppTheme
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
 
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import com.example.gamerapp.ui.components.GamerButton
+import com.example.gamerapp.ui.components.GamerTextField
+import com.example.gamerapp.ui.theme.GamerAppTheme
+import com.example.gamerapp.ui.theme.GrayMedium
+import com.example.gamerapp.utils.Validator
+
+class ForgotPasswordActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            GamerAppTheme {
+                ForgotPasswordScreen()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
+fun ForgotPasswordScreen() {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    fun validateEmail(): Boolean {
-        emailError = if (email.isBlank()) "Email is required"
-        else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) "Invalid email format"
-        else ""
-        return emailError.isEmpty()
+    var emailPhone by remember { mutableStateOf("") }
+    var emailPhoneError by remember { mutableStateOf(false) }
+
+    // Real-time validation
+    LaunchedEffect(emailPhone) {
+        emailPhoneError = emailPhone.isNotEmpty() && !Validator.isValidEmailOrPhone(emailPhone)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Forgot Password",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = { (context as? ComponentActivity)?.finish() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                if (emailError.isNotEmpty()) validateEmail()
-            },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = emailError.isNotEmpty(),
-            supportingText = {
-                if (emailError.isNotEmpty()) Text(emailError)
-            }
-        )
+            // Title
+            Text(
+                text = "Forgot Password",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = {
-                if (validateEmail()) {
-                    navController.navigate("otp_validation/1234")
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Please enter a valid email")
+            // Description
+            Text(
+                text = "Please enter your registered email to reset your password",
+                style = MaterialTheme.typography.bodyMedium,
+                color = GrayMedium
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Email/Phone Field
+            GamerTextField(
+                value = emailPhone,
+                onValueChange = { emailPhone = it },
+                label = "Email/Phone",
+                icon = Icons.Default.Email,
+                keyboardType = KeyboardType.Email,
+                isError = emailPhoneError,
+                errorMessage = "Must not be empty!"
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Submit Button
+            GamerButton(
+                text = "Submit",
+                onClick = {
+                    if (Validator.isValidEmailOrPhone(emailPhone)) {
+                        val intent = Intent(context, OTPValidationActivity::class.java)
+                        intent.putExtra("OTP_CODE", "1234")
+                        context.startActivity(intent)
+                    } else {
+                        emailPhoneError = true
+                        scope.launch {
+                            snackbarHostState.showSnackbar("You Have some errors in your inputs!")
+                        }
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE91E63), // Pink background
-                contentColor = Color.White          // White text
-            )) {
-            Text("Submit")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                navController.navigate("otp_validation/6789")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE91E63), // Pink background
-                contentColor = Color.White          // White text
             )
-        ) {
-            Text("Send SMS")
-        }
-    }
 
-    SnackbarHost(hostState = snackbarHostState)
-}
+            Spacer(modifier = Modifier.height(16.dp))
 
-@Preview(showBackground = true)
-@Composable
-fun ForgotPasswordScreenPreview() {
-    GamerAppTheme {
-        ForgotPasswordScreen(navController = rememberNavController())
-    }
-}
+            // OR
+            Text(
+                text = "OR",
+                color = GrayMedium,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Send SMS Button
+            GamerButton(
+                text = "Send SMS",
+                onClick = {
+                    if (Validator.isValidEmailOrPhone(emailPhone)) {
+                        val intent = Intent(context, OTPValidationActivity::class.java)
+                        intent.putExtra("OTP_CODE", "6789")
+                        context.startActivity(intent)
+                    } else {
+                        emailPhoneError = true
+                        scope.launch {
+                            snackbarHostState.showSnackbar("You Have some errors in your inputs!")
+                        }
+                    }
+                }
+            )
+        }}}
+

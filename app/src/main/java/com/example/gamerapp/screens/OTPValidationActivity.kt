@@ -1,136 +1,221 @@
 package com.example.gamerapp.screens
 
-import androidx.navigation.compose.rememberNavController
-import com.example.gamerapp.ui.theme.GamerAppTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import com.example.gamerapp.ui.components.GamerButton
+import com.example.gamerapp.ui.theme.GamerAppTheme
+import com.example.gamerapp.ui.theme.GrayMedium
+import com.example.gamerapp.ui.theme.InputBorderNormal
+import com.example.gamerapp.ui.theme.PrimaryPink
 
-@Composable
-fun OTPValidationScreen(navController: NavController, expectedCode: String) {
-    val otpFields = remember { mutableStateListOf("", "", "", "") }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val focusRequesters = remember { List(4) { FocusRequester() } }
+class OTPValidationActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val expectedCode = intent.getStringExtra("OTP_CODE") ?: "1234"
 
-    LaunchedEffect(Unit) {
-        focusRequesters[0].requestFocus()
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "OTP Validation",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            otpFields.forEachIndexed { index, value ->
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { newValue ->
-                        if (newValue.length <= 1 && newValue.all { it.isDigit() }) {
-                            otpFields[index] = newValue
-                            if (newValue.isNotEmpty() && index < 3) {
-                                focusRequesters[index + 1].requestFocus()
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .width(60.dp)
-                        .focusRequester(focusRequesters[index]),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center)
-                )
+        setContent {
+            GamerAppTheme {
+                OTPValidationScreen(expectedCode = expectedCode)
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = {
-                val enteredCode = otpFields.joinToString("")
-                if (enteredCode == expectedCode) {
-                    navController.navigate("reset_password")
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Invalid OTP code")
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE91E63),
-                contentColor = Color.White
-            )){
-            Text("Verify")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(
-            onClick = {
-                scope.launch {
-                    snackbarHostState.showSnackbar("Coming soon") }
-
-            },
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = Color(0xFFE91E63)
-        )) {
-            Text("Resend Code")
-        }
     }
-
-    SnackbarHost(hostState = snackbarHostState)
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OTPValidationScreenPreview() {
-    GamerAppTheme {
-        OTPValidationScreen(
-            navController = rememberNavController(),
-            expectedCode = "1234"
-        )
+fun OTPValidationScreen(expectedCode: String) {
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    var otp1 by remember { mutableStateOf("") }
+    var otp2 by remember { mutableStateOf("") }
+    var otp3 by remember { mutableStateOf("") }
+    var otp4 by remember { mutableStateOf("") }
+
+    val focusRequester2 = remember { FocusRequester() }
+    val focusRequester3 = remember { FocusRequester() }
+    val focusRequester4 = remember { FocusRequester() }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = { (context as? ComponentActivity)?.finish() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Title
+            Text(
+                text = "Enter the code sent to you by\nEmail or Mobile number",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // OTP Fields
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                OTPTextField(
+                    value = otp1,
+                    onValueChange = {
+                        if (it.length <= 1 && it.all { char -> char.isDigit() }) {
+                            otp1 = it
+                            if (it.length == 1) focusRequester2.requestFocus()
+                        }
+                    }
+                )
+
+                OTPTextField(
+                    value = otp2,
+                    onValueChange = {
+                        if (it.length <= 1 && it.all { char -> char.isDigit() }) {
+                            otp2 = it
+                            if (it.length == 1) focusRequester3.requestFocus()
+                        }
+                    },
+                    focusRequester = focusRequester2
+                )
+
+                OTPTextField(
+                    value = otp3,
+                    onValueChange = {
+                        if (it.length <= 1 && it.all { char -> char.isDigit() }) {
+                            otp3 = it
+                            if (it.length == 1) focusRequester4.requestFocus()
+                        }
+                    },
+                    focusRequester = focusRequester3
+                )
+
+                OTPTextField(
+                    value = otp4,
+                    onValueChange = {
+                        if (it.length <= 1 && it.all { char -> char.isDigit() }) {
+                            otp4 = it
+                        }
+                    },
+                    focusRequester = focusRequester4
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Verify Button
+            GamerButton(
+                text = "Verify",
+                onClick = {
+                    val enteredCode = "$otp1$otp2$otp3$otp4"
+
+                    if (enteredCode.length != 4) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Please enter complete code!")
+                        }
+                        return@GamerButton
+                    }
+
+                    if (enteredCode == expectedCode) {
+                        context.startActivity(Intent(context, ResetPasswordActivity::class.java))
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Wrong code!")
+                        }
+                        otp1 = ""
+                        otp2 = ""
+                        otp3 = ""
+                        otp4 = ""
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Didn't receive code
+            Text(
+                text = "Didn't receive a verification code?",
+                color = GrayMedium,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Resend Code
+            TextButton(onClick = {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Coming soon :)")
+                }
+            }) {
+                Text("Resend code", color = PrimaryPink, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OTPTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    focusRequester: FocusRequester? = null
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .width(60.dp)
+            .height(60.dp)
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .border(1.dp, InputBorderNormal, RoundedCornerShape(8.dp)),
+        textStyle = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        shape = RoundedCornerShape(8.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+        )
+    )
 }

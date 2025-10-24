@@ -1,129 +1,157 @@
 package com.example.gamerapp.screens
-import androidx.navigation.compose.rememberNavController
-import com.example.gamerapp.ui.theme.GamerAppTheme
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import com.example.gamerapp.ui.components.GamerButton
+import com.example.gamerapp.ui.components.GamerTextField
+import com.example.gamerapp.ui.theme.GamerAppTheme
+import com.example.gamerapp.ui.theme.GrayMedium
+import com.example.gamerapp.utils.Validator
+
+class ResetPasswordActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            GamerAppTheme {
+                ResetPasswordScreen()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResetPasswordScreen(navController: NavController) {
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var newPasswordError by remember { mutableStateOf("") }
-    var confirmPasswordError by remember { mutableStateOf("") }
+fun ResetPasswordScreen() {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    fun validateFields(): Boolean {
-        newPasswordError = if (newPassword.isBlank()) "Password is required"
-        else if (newPassword.length < 6) "Password must be at least 6 characters"
-        else ""
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
-        confirmPasswordError = if (confirmPassword != newPassword) "Passwords don't match" else ""
+    var passwordError by remember { mutableStateOf(false) }
+    var confirmPasswordError by remember { mutableStateOf(false) }
 
-        return newPasswordError.isEmpty() && confirmPasswordError.isEmpty()
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Reset Password",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        OutlinedTextField(
-            value = newPassword,
-            onValueChange = {
-                newPassword = it
-                if (newPasswordError.isNotEmpty()) validateFields()
-            },
-            label = { Text("New Password") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = newPasswordError.isNotEmpty(),
-            supportingText = {
-                if (newPasswordError.isNotEmpty()) Text(newPasswordError)
-            },
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-                if (confirmPasswordError.isNotEmpty()) validateFields()
-            },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = confirmPasswordError.isNotEmpty(),
-            supportingText = {
-                if (confirmPasswordError.isNotEmpty()) Text(confirmPasswordError)
-            },
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = {
-                if (validateFields()) {
-                    navController.navigate("login") {
-                        popUpTo(0) // Clear entire back stack
-                    }
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Please check your inputs")
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE91E63), // Pink background
-                contentColor = Color.White          // White text
-            )){
-            Text("Reset Password")
+    // Real-time validation
+    LaunchedEffect(password) {
+        passwordError = password.isNotEmpty() && !Validator.isValidPassword(password)
+        if (confirmPassword.isNotEmpty()) {
+            confirmPasswordError = !Validator.doPasswordsMatch(password, confirmPassword)
         }
     }
 
-    SnackbarHost(hostState = snackbarHostState)
-}
+    LaunchedEffect(confirmPassword) {
+        confirmPasswordError = confirmPassword.isNotEmpty() && !Validator.doPasswordsMatch(password, confirmPassword)
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun ResetPasswordScreenPreview() {
-    GamerAppTheme {
-        ResetPasswordScreen(navController = rememberNavController())
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = { (context as? ComponentActivity)?.finish() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Title
+            Text(
+                text = "Reset Password",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Description
+            Text(
+                text = "Please enter your new password and confirm it.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = GrayMedium
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Password Field
+            GamerTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = "Password",
+                icon = Icons.Default.Lock,
+                isPassword = true,
+                isError = passwordError,
+                errorMessage = "Must not be empty!"
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Confirm Password Field
+            GamerTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = "Confirm Password",
+                icon = Icons.Default.Lock,
+                isPassword = true,
+                isError = confirmPasswordError,
+                errorMessage = "Must be the same password!"
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Submit Button
+            GamerButton(
+                text = "Submit",
+                onClick = {
+                    val isPasswordValid = Validator.isValidPassword(password)
+                    val isConfirmPasswordValid = Validator.doPasswordsMatch(password, confirmPassword)
+
+                    passwordError = !isPasswordValid
+                    confirmPasswordError = !isConfirmPasswordValid
+
+                    if (isPasswordValid && isConfirmPasswordValid) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Password Reset Successful!")
+                        }
+                        val intent = Intent(context, LoginActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                        (context as? ComponentActivity)?.finish()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("You Have some errors in your inputs!")
+                        }
+                    }
+                }
+            )
+        }
     }
 }
